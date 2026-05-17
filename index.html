@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0E1430" />
+<title>고요로 GOYO–RO</title>
+<style>
+  :root{
+    --night:#0E1430;
+    --night-2:#161E45;
+    --ink:#1F2A56;
+    --cream:#F4ECDF;
+    --cream-2:#EBE0CD;
+    --sage:#7FA88B;
+    --moss:#3F5B4A;
+    --gold:#E4B468;
+    --rose:#E89A8E;
+    --mist:#A8B3D3;
+    --line:rgba(244,236,223,.18);
+    --line-2:rgba(244,236,223,.35);
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bot: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{
+    background:#000;
+    color:var(--cream);
+    font-family:'Apple SD Gothic Neo','Pretendard','Malgun Gothic',-apple-system,BlinkMacSystemFont,sans-serif;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* 데스크탑에선 폰 목업, 모바일에선 풀스크린 */
+  .device{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    background:
+      radial-gradient(900px 600px at 20% 10%, #1a2454 0%, transparent 60%),
+      radial-gradient(700px 500px at 85% 90%, #2a1c3d 0%, transparent 55%),
+      linear-gradient(180deg,#0a0e22,#0E1430 60%, #0a0e22);
+    overflow:hidden;
+    display:flex;flex-direction:column;
+  }
+  @media (min-width: 600px){
+    body{padding:24px}
+    .device{
+      width:390px;height:min(844px, 96vh);
+      border-radius:46px;
+      box-shadow:
+        0 40px 80px rgba(0,0,0,.6),
+        inset 0 0 0 10px #0a0e22,
+        inset 0 0 0 11px rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .device .notch{
+      position:absolute;left:50%;top:14px;transform:translateX(-50%);
+      width:110px;height:24px;border-radius:999px;background:#000;z-index:50;
+    }
+    .device .frame-inner{
+      position:absolute;inset:18px;border-radius:36px;overflow:hidden;
+      display:flex;flex-direction:column;
+    }
+  }
+  /* 모바일은 풀스크린 */
+  @media (max-width: 599px){
+    .device .notch{display:none}
+    .device .frame-inner{
+      position:absolute;inset:0;display:flex;flex-direction:column;
+    }
+  }
+
+  /* 별 배경 */
+  .stars{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .stars span{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;animation:tw 4s infinite ease-in-out}
+  @keyframes tw{0%,100%{opacity:.2;transform:scale(.8)}50%{opacity:.9;transform:scale(1.2)}}
+
+  /* 상단 상태바 */
+  .status-bar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding: calc(var(--safe-top) + 12px) 24px 4px;
+    font-size:13px;color:var(--cream);font-weight:600;
+    position:relative;z-index:5;
+  }
+  .status-bar .right{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mist)}
+
+  /* 앱 헤더 */
+  .app-header{
+    padding:6px 22px 10px;display:flex;align-items:center;justify-content:space-between;
+    position:relative;z-index:5;
+  }
+  .app-header .brand{display:flex;align-items:center;gap:10px}
+  .logo-mark{
+    width:30px;height:30px;border-radius:9px;
+    background:radial-gradient(circle at 30% 30%, #fff, #E4B468 40%, #5C4220 90%);
+    box-shadow:0 0 16px rgba(228,180,104,.4), inset -4px -6px 10px rgba(0,0,0,.35);
+  }
+  .app-header h1{font-size:15px;font-weight:800;letter-spacing:.3px}
+  .app-header h1 small{color:var(--mist);font-size:11px;font-weight:500;margin-left:6px}
+  .app-header .right{font-size:11px;color:var(--mist);padding:6px 10px;border:1px solid var(--line);border-radius:999px}
+
+  /* 화면 영역 */
+  .pages{
+    flex:1;
+    position:relative;
+    overflow:hidden;
+  }
+  .page{
+    position:absolute;inset:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    -webkit-overflow-scrolling:touch;
+    opacity:0;
+    pointer-events:none;
+    transform: translateX(20px);
+    transition: opacity .28s ease, transform .28s ease;
+    padding:8px 22px 24px;
+    scrollbar-width:none;
+  }
+  .page::-webkit-scrollbar{display:none}
+  .page.active{
+    opacity:1;pointer-events:auto;transform:translateX(0);
+  }
+
+  /* 공통 */
+  .greet small{color:var(--mist);font-size:11px;letter-spacing:.5px;text-transform:uppercase}
+  .greet h2{font-size:24px;margin-top:6px;line-height:1.3;font-weight:800}
+  .greet h2 em{font-style:normal;color:var(--gold)}
+  .page-title{font-size:22px;font-weight:800;margin:4px 0 14px}
+  .page-title em{font-style:normal;color:var(--gold)}
+
+  .card{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:18px;padding:14px;margin-bottom:12px;
+  }
+  .card h4{font-size:14px;font-weight:700;letter-spacing:.2px}
+  .card .meta{font-size:11px;color:var(--mist);margin-top:4px;line-height:1.5}
+  .card.glow{background:linear-gradient(145deg, rgba(228,180,104,.18), rgba(232,154,142,.10));border-color:rgba(228,180,104,.35)}
+  .row{display:flex;align-items:center;gap:10px}
+  .pill{font-size:10px;padding:4px 9px;border-radius:999px;background:rgba(244,236,223,.08);border:1px solid var(--line);color:var(--cream)}
+  .pill.gold{background:rgba(228,180,104,.16);border-color:rgba(228,180,104,.4);color:#F7DDA6}
+  .pill.sage{background:rgba(127,168,139,.16);border-color:rgba(127,168,139,.4);color:#C9E1CF}
+  .pill.rose{background:rgba(232,154,142,.16);border-color:rgba(232,154,142,.4);color:#F4C7BF}
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:13px 14px;border-radius:14px;font-size:13.5px;font-weight:700;cursor:pointer;
+    border:1px solid var(--line-2);background:rgba(255,255,255,.06);color:var(--cream);
+    transition:transform .12s ease, background .2s ease, opacity .15s ease;
+    font-family:inherit;
+  }
+  .btn:active{transform:scale(.97)}
+  .btn.primary{background:linear-gradient(135deg,#E4B468,#C98E58);border-color:transparent;color:#1F1607}
+  .btn.ghost{background:transparent}
+  .btn.danger{background:rgba(232,154,142,.16);border-color:rgba(232,154,142,.4);color:#F4C7BF}
+
+  /* 퀘스트 카드 (홈) */
+  .qhero{
+    border-radius:20px;padding:18px;margin-bottom:14px;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(228,180,104,.35), transparent 50%),
+      radial-gradient(circle at 20% 80%, rgba(127,168,139,.35), transparent 50%),
+      linear-gradient(135deg,#1c2658,#0e1330);
+    border:1px solid var(--line);
+  }
+  .qhero .big{font-size:18px;font-weight:800}
+  .qhero .sub{font-size:12px;color:var(--mist);margin-top:6px}
+  .qhero .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+  .qhero .grid div{background:rgba(255,255,255,.06);border-radius:12px;padding:10px;text-align:center;font-size:11px;color:var(--mist)}
+  .qhero .grid b{display:block;font-size:15px;color:var(--gold);margin-bottom:2px}
+
+  /* 퀘스트 리스트 */
+  .quest-item{
+    border-radius:18px;padding:14px;margin-bottom:12px;
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    display:flex;align-items:center;gap:14px;
+    cursor:pointer;transition:background .15s ease, transform .12s ease;
+  }
+  .quest-item:active{transform:scale(.99);background:rgba(255,255,255,.07)}
+  .quest-item .icon{
+    width:54px;height:54px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:28px;
+    background:linear-gradient(135deg, rgba(228,180,104,.22), rgba(127,168,139,.22));
+    border:1px solid var(--line);
+    flex-shrink:0;
+  }
+  .quest-item .info{flex:1;min-width:0}
+  .quest-item .info h4{font-size:14px;font-weight:700}
+  .quest-item .info p{font-size:11px;color:var(--mist);margin-top:3px;line-height:1.5}
+  .quest-item .info .tags{display:flex;gap:5px;margin-top:7px;flex-wrap:wrap}
+  .quest-item .chev{color:var(--mist);font-size:18px;flex-shrink:0}
+
+  /* 정령 그리드 */
+  .spirit-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .spirit{
+    aspect-ratio:1;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.04);border:1px solid var(--line);position:relative;overflow:hidden;
+    text-align:center;
+  }
+  .spirit .emo{font-size:36px;line-height:1;margin-bottom:6px;filter:drop-shadow(0 0 12px rgba(228,180,104,.3))}
+  .spirit .name{font-size:11px;color:var(--cream);font-weight:700}
+  .spirit .sub{font-size:9.5px;color:var(--mist);margin-top:1px}
+  .spirit.locked{opacity:.4}
+  .spirit .badge{position:absolute;top:6px;right:6px;font-size:9px;padding:2px 6px;border-radius:999px;background:rgba(228,180,104,.18);border:1px solid rgba(228,180,104,.4);color:#F7DDA6}
+
+  /* 정원 풍경 */
+  .garden{
+    border-radius:22px;height:220px;position:relative;overflow:hidden;
+    background:
+      radial-gradient(ellipse at 50% 110%, #496B58 0%, transparent 60%),
+      linear-gradient(180deg, #0e1330 0%, #1a2a35 70%, #2c4138 100%);
+    border:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .garden .gstar{position:absolute;background:#fff;border-radius:50%;width:2px;height:2px}
+  .garden .ground{position:absolute;bottom:0;left:0;right:0;height:42%;background:linear-gradient(180deg,#3a5446,#26382e)}
+  .garden .obj{position:absolute;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4))}
+  .garden .crystal{position:absolute;top:14px;left:14px;font-size:11px;color:var(--gold);background:rgba(0,0,0,.45);padding:6px 12px;border-radius:999px;border:1px solid rgba(228,180,104,.4);font-weight:600}
+  .garden .moon{position:absolute;right:18px;top:18px;width:42px;height:42px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff, #E4B468 55%, #6b4a18 100%);
+    box-shadow:0 0 28px rgba(228,180,104,.55)}
+  .float{animation:floaty 4s ease-in-out infinite}
+  @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+  /* 리포트 카드 */
+  .report-card{
+    border-radius:20px;padding:18px;color:#1F1607;margin-bottom:14px;
+    background:linear-gradient(160deg, #F4ECDF 0%, #E4B468 100%);
+    box-shadow:0 18px 40px rgba(228,180,104,.25);
+  }
+  .report-card .when{font-size:11px;color:#5C4220;letter-spacing:.3px}
+  .report-card h4{font-size:19px;margin-top:4px;color:#1F1607;font-weight:800}
+  .report-card .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+  .report-card .stat div{background:rgba(255,255,255,.45);border-radius:12px;padding:10px;text-align:center}
+  .report-card .stat b{display:block;font-size:18px;color:#5C4220;font-weight:800}
+  .report-card .stat small{font-size:10px;color:#7d5a23}
+  .report-card .quote{margin-top:12px;font-size:12.5px;font-style:italic;color:#5C4220;line-height:1.6}
+
+  /* 바우처 */
+  .voucher{
+    border-radius:20px;padding:18px;display:flex;justify-content:space-between;align-items:center;gap:10px;
+    background:repeating-linear-gradient(135deg, rgba(127,168,139,.18) 0 12px, transparent 12px 24px), rgba(127,168,139,.10);
+    border:1px dashed rgba(127,168,139,.55);
+    margin-bottom:14px;
+  }
+  .voucher .v-amt{font-size:24px;font-weight:800;color:#C9E1CF}
+  .voucher .v-meta{font-size:11px;color:var(--mist);margin-top:3px}
+
+  /* 탭바 */
+  .tabbar{
+    display:grid;grid-template-columns:repeat(5,1fr);
+    border-top:1px solid var(--line);
+    background:rgba(10,14,34,.92);
+    backdrop-filter: blur(8px);
+    padding-bottom: var(--safe-bot);
+    position:relative;z-index:30;
+  }
+  .tabbar button{
+    background:none;border:none;color:var(--mist);
+    padding:11px 6px 12px;font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+    font-family:inherit;letter-spacing:.3px;transition:color .2s ease;
+  }
+  .tabbar button.active{color:var(--gold)}
+  .tabbar button svg{width:22px;height:22px;stroke:currentColor;stroke-width:1.7;fill:none}
+
+  /* 오버레이 / 인큐베이션 */
+  .overlay{
+    position:absolute;inset:0;z-index:80;
+    display:none;align-items:center;justify-content:center;padding:24px;
+    background:radial-gradient(ellipse at 50% 30%, #1c2658 0%, #0a0e22 80%);
+  }
+  .overlay.show{display:flex;animation:fade .3s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .incu-inner{text-align:center;width:100%}
+  .incu-inner .tag{font-size:11px;color:var(--mist);letter-spacing:.6px}
+  .ring{
+    width:200px;height:200px;border-radius:50%;margin:24px auto 24px;
+    background:conic-gradient(from -90deg, #E4B468 0%, #E89A8E 30%, #7FA88B 60%, #1c2658 90%);
+    display:flex;align-items:center;justify-content:center;position:relative;
+    animation:spin 16s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ring::after{
+    content:"";position:absolute;inset:14px;border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, #fff, #E4B468 35%, #5C4220 100%);
+    box-shadow:0 0 50px rgba(228,180,104,.55);
+    animation:spinrev 16s linear infinite;
+  }
+  @keyframes spinrev{to{transform:rotate(-360deg)}}
+  .incu-inner .timer{font-size:44px;font-weight:800;letter-spacing:1px}
+  .incu-inner .hint{font-size:12px;color:var(--gold);margin-top:8px;letter-spacing:.4px}
+  .incu-inner .desc{font-size:12.5px;color:var(--mist);margin-top:14px;line-height:1.7}
+  .incu-actions{display:flex;gap:10px;justify-content:center;margin-top:24px}
+
+  /* 모달 */
+  .modal-wrap{position:absolute;inset:0;z-index:90;display:none;align-items:center;justify-content:center;padding:24px;
+    background:rgba(0,0,0,.6);backdrop-filter: blur(6px);animation:fade .25s ease}
+  .modal-wrap.show{display:flex}
+  .modal{background:linear-gradient(160deg,#1c2658,#0d1230);border:1px solid var(--line-2);
+    border-radius:22px;padding:24px;width:100%;max-width:300px;text-align:center}
+  .modal .big-emo{font-size:72px;margin-bottom:8px;animation:floaty 3s ease-in-out infinite;filter:drop-shadow(0 0 24px rgba(228,180,104,.5))}
+  .modal h4{font-size:20px;font-weight:800;color:var(--gold);margin-bottom:6px}
+  .modal p{font-size:13px;color:var(--mist);line-height:1.6}
+  .modal .actions{display:flex;gap:8px;margin-top:18px}
+
+  /* 퀘스트 상세 모달 */
+  .sheet{
+    position:absolute;left:0;right:0;bottom:0;z-index:85;
+    background:linear-gradient(180deg,#1c2658,#0d1230);
+    border-top-left-radius:24px;border-top-right-radius:24px;
+    padding:20px 22px calc(24px + var(--safe-bot));
+    border-top:1px solid var(--line-2);
+    transform:translateY(100%);transition:transform .3s ease;
+  }
+  .sheet.show{transform:translateY(0)}
+  .sheet .grip{width:42px;height:4px;border-radius:99px;background:rgba(255,255,255,.25);margin:0 auto 14px}
+  .sheet h3{font-size:18px;font-weight:800;margin-bottom:6px}
+  .sheet p{font-size:13px;color:var(--mist);line-height:1.7;margin-bottom:14px}
+  .sheet .meta-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .sheet .meta-row div{background:rgba(255,255,255,.06);border-radius:12px;padding:10px;text-align:center;font-size:11px;color:var(--mist)}
+  .sheet .meta-row b{display:block;color:var(--gold);font-size:14px;margin-bottom:3px}
+
+  /* 토스트 */
+  .toast{position:absolute;left:22px;right:22px;bottom:90px;display:none;z-index:100;
+    background:rgba(20,28,68,.95);border:1px solid var(--line-2);border-radius:14px;padding:13px;text-align:center;font-size:13px;
+    animation:slideUp .25s ease}
+  @keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .toast.show{display:block}
+
+  /* 진행 바 */
+  .progress{height:10px;background:rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:8px}
+  .progress > div{height:100%;background:linear-gradient(90deg,#E4B468,#E89A8E);transition:width .4s ease}
+
+  /* 퀘스트 시작 큰 버튼 */
+  .cta-row{display:flex;gap:10px;margin-top:14px}
+  .cta-row .btn{flex:1}
+
+  /* 시즌 헤더(퀘스트 탭) */
+  .season-header{
+    border-radius:18px;padding:14px 16px;margin-bottom:14px;
+    background:linear-gradient(135deg, rgba(127,168,139,.2), rgba(228,180,104,.15));
+    border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .season-header .left small{color:var(--mist);font-size:10.5px;letter-spacing:.5px}
+  .season-header .left h4{font-size:14px;margin-top:2px;font-weight:700}
+  .season-header .progress{width:90px;height:8px;margin:0}
+
+  /* 데모 텍스트 */
+  .demo-note{
+    text-align:center;font-size:10.5px;color:var(--mist);
+    padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.03);border:1px dashed var(--line);
+    margin-top:10px;line-height:1.6;
+  }
+
+  /* 스플래시 / 시작 화면 */
+  .splash{
+    position:absolute;inset:0;z-index:200;
+    display:flex;flex-direction:column;align-items:center;justify-content:space-between;
+    padding: calc(var(--safe-top) + 60px) 32px calc(var(--safe-bot) + 50px);
+    background:
+      radial-gradient(900px 600px at 75% 18%, rgba(228,180,104,.35), transparent 55%),
+      radial-gradient(700px 500px at 20% 80%, rgba(127,168,139,.30), transparent 55%),
+      linear-gradient(180deg,#0a0e22 0%,#10173a 50%, #0a0e22 100%);
+    overflow:hidden;
+    transition: opacity .55s ease, transform .55s ease;
+  }
+  .splash.hide{opacity:0;transform:scale(1.05);pointer-events:none}
+  .splash .moonbig{
+    position:absolute;right:-30px;top:14%;width:160px;height:160px;border-radius:50%;
+    background:radial-gradient(circle at 35% 35%, #fff, #E4B468 50%, #5C4220 100%);
+    box-shadow:0 0 80px rgba(228,180,104,.55), 0 0 200px rgba(228,180,104,.25);
+    animation: floaty 8s ease-in-out infinite;
+  }
+  .splash .mountainbg{
+    position:absolute;bottom:0;left:0;right:0;height:50%;
+    background:
+      radial-gradient(ellipse at 28% 100%, #3F5B4A 0%, transparent 62%),
+      radial-gradient(ellipse at 72% 100%, #2a3a48 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 105%, #4A6655 0%, transparent 50%);
+    pointer-events:none;
+  }
+  .splash .lakeline{
+    position:absolute;left:12%;right:12%;bottom:22%;height:3px;border-radius:999px;
+    background:rgba(255,255,255,.18);filter:blur(2px);
+  }
+  .splash .splash-stars{position:absolute;inset:0;pointer-events:none}
+  .splash .splash-stars span{position:absolute;background:#fff;border-radius:50%;animation:tw 4s infinite ease-in-out}
+
+  .splash-top{position:relative;z-index:2;text-align:center;animation:fadeDown .8s ease}
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+  .splash-top .gamename{
+    font-size:54px;font-weight:900;letter-spacing:-1px;line-height:1;
+    background:linear-gradient(135deg,#F4ECDF 0%, #E4B468 60%, #E89A8E 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 40px rgba(228,180,104,.3);
+  }
+  .splash-top .gamesub{
+    font-size:14px;color:var(--cream);margin-top:10px;letter-spacing:6px;font-weight:600;
+  }
+  .splash-top .tagline{
+    margin-top:16px;font-size:12.5px;color:var(--mist);letter-spacing:.3px;line-height:1.6;font-style:italic;
+  }
+
+  .splash-mid{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px}
+  .splash-mid .planet-mark{
+    width:74px;height:74px;border-radius:22px;
+    background:radial-gradient(circle at 30% 30%, #fff, #E4B468 40%, #5C4220 90%);
+    box-shadow:0 0 50px rgba(228,180,104,.55), inset -8px -12px 18px rgba(0,0,0,.35);
+    animation: floaty 5s ease-in-out infinite;
+  }
+  .splash-mid .planet-cap{
+    font-size:11px;color:var(--mist);letter-spacing:.4px;margin-top:14px;
+  }
+
+  .splash-bottom{position:relative;z-index:2;width:100%;display:flex;flex-direction:column;align-items:center;gap:14px;animation:fadeUp .8s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  .start-btn{
+    width:100%;max-width:280px;
+    padding:18px 20px;border-radius:18px;border:none;cursor:pointer;
+    font-family:inherit;font-size:16px;font-weight:800;letter-spacing:.4px;color:#1F1607;
+    background:linear-gradient(135deg, #F0CC85 0%, #E4B468 50%, #C98E58 100%);
+    box-shadow:
+      0 18px 40px rgba(228,180,104,.35),
+      0 0 0 1px rgba(255,255,255,.15) inset;
+    transition:transform .15s ease, box-shadow .25s ease;
+    animation: glow 2.6s ease-in-out infinite;
+  }
+  .start-btn:active{transform:scale(.97)}
+  @keyframes glow{
+    0%,100%{box-shadow:0 18px 40px rgba(228,180,104,.35), 0 0 0 1px rgba(255,255,255,.15) inset}
+    50%{box-shadow:0 18px 60px rgba(228,180,104,.6), 0 0 0 1px rgba(255,255,255,.25) inset}
+  }
+  .splash-bottom .footer-mini{
+    font-size:11px;color:var(--mist);letter-spacing:.4px;text-align:center;
+  }
+  .splash-bottom .footer-mini b{color:var(--cream);font-weight:600}
+
+  /* 배터리 표시 */
+  .battery-icon{
+    display:inline-flex;align-items:center;gap:3px;
+  }
+  .battery-icon .shell{
+    width:18px;height:9px;border:1px solid currentColor;border-radius:2px;
+    position:relative;padding:1px;
+  }
+  .battery-icon .shell::after{
+    content:"";position:absolute;right:-3px;top:2px;width:2px;height:5px;background:currentColor;border-radius:0 1px 1px 0;
+  }
+  .battery-icon .lv{height:100%;background:currentColor;border-radius:1px}
+  .battery-icon.low{color:#E89A8E}
+  .battery-icon.charging{color:#7FA88B}
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="notch"></div>
+  <div class="frame-inner">
+
+    <div class="stars" id="stars"></div>
+
+    <!-- 상태바 -->
+    <div class="status-bar">
+      <span>
+        <span id="clock">--:--</span>
+        <span id="clock-date" style="font-size:11px;color:var(--mist);font-weight:500;margin-left:6px">--</span>
+      </span>
+      <span class="right">
+        <span>● 횡성</span>
+        <span id="battery-wrap" class="battery-icon" title="배터리">
+          <span id="battery-text">--%</span>
+          <span class="shell"><span class="lv" id="battery-lv" style="width:50%"></span></span>
+        </span>
+      </span>
+    </div>
+
+    <!-- 앱 헤더 -->
+    <div class="app-header">
+      <div class="brand">
+        <div class="logo-mark"></div>
+        <h1>고요로 <small>GOYO–RO</small></h1>
+      </div>
+      <div class="right" id="seasonChip">시즌 1 · 봄</div>
+    </div>
+
+    <!-- 페이지들 -->
+    <div class="pages">
+
+      <!-- 1. 홈 -->
+      <div class="page active" id="page-home">
+        <div class="greet">
+          <small id="today-date">2026.05.17 · SUN</small>
+          <h2>오늘, <em>화면을 끄기</em><br>좋은 날이에요 ✨</h2>
+        </div>
+
+        <div class="qhero">
+          <div class="big">🌙 오늘의 추천 퀘스트</div>
+          <div class="sub">블랙아웃 트레킹 · 횡성호수길 6.4km</div>
+          <div class="grid">
+            <div><b>40분</b>최소 디톡스</div>
+            <div><b>달달이</b>부화 정령</div>
+            <div><b>+3</b>예상 슬롯</div>
+          </div>
+          <div class="cta-row">
+            <button class="btn primary" onclick="startIncubation(40,'블랙아웃 트레킹')">인큐베이션 시작</button>
+            <button class="btn" onclick="switchTab('quest')">퀘스트 더 보기</button>
+          </div>
+        </div>
+
+        <div class="card" onclick="switchTab('garden')" style="cursor:pointer">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>🌿 나의 정령 보관함</h4>
+              <div class="meta">보유 <b id="kept-count">3</b> / 7 · 방생까지 <b id="release-need">7</b>마리</div>
+            </div>
+            <span class="pill gold">정원 열기 →</span>
+          </div>
+        </div>
+
+        <div class="card" onclick="switchTab('reward')" style="cursor:pointer">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>🎫 로컬 바우처</h4>
+              <div class="meta">사용 가능 <b id="voucher-count">0</b>매 · 만료 90일</div>
+            </div>
+            <span class="pill sage">보상 →</span>
+          </div>
+        </div>
+
+        <div class="card glow">
+          <div class="row" style="gap:14px">
+            <div style="font-size:30px">🛰️</div>
+            <div>
+              <h4>‘횡성이라는 행성’에 착륙했어요</h4>
+              <div class="meta">지오펜스 감지 · 디톡스 필드 4곳 활성</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="demo-note">📵 이 앱은 화면을 끌수록 정령이 자라요.<br>인큐베이션을 시작해보세요.</div>
+      </div>
+
+      <!-- 2. 퀘스트 -->
+      <div class="page" id="page-quest">
+        <h2 class="page-title">오늘의 <em>퀘스트</em></h2>
+
+        <div class="season-header">
+          <div class="left">
+            <small>SEASON 1 · 봄</small>
+            <h4>이번 시즌 누적 디톡스 4시간 22분</h4>
+            <div class="progress" style="width:100%;margin-top:8px;height:8px"><div style="width:42%"></div></div>
+          </div>
+        </div>
+
+        <div class="quest-item" onclick="openQuestSheet('night')">
+          <div class="icon">🌙</div>
+          <div class="info">
+            <h4>나이트 퀘스트</h4>
+            <p>23시~07시 숙면 모드 · 도도(이슬 정령) 부화</p>
+            <div class="tags"><span class="pill">8시간</span><span class="pill sage">N</span></div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="quest-item" onclick="openQuestSheet('trek')">
+          <div class="icon">🦦</div>
+          <div class="info">
+            <h4>블랙아웃 트레킹</h4>
+            <p>횡성호수길/숲체원 · 달달이가 아이템 채집</p>
+            <div class="tags"><span class="pill">40분~</span><span class="pill gold">R</span><span class="pill sage">추천</span></div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="quest-item" onclick="openQuestSheet('raid')">
+          <div class="icon">🐂</div>
+          <div class="info">
+            <h4>스페셜 레이드</h4>
+            <p>한우 축제 ‘노폰 라운지’ · 방구(한우 정령) 수집</p>
+            <div class="tags"><span class="pill">90분</span><span class="pill rose">E</span></div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="quest-item" onclick="openQuestSheet('party')">
+          <div class="icon">🥯</div>
+          <div class="info">
+            <h4>파티 퀘스트</h4>
+            <p>식당/카페 NFC 폰 탑 쌓기 · 진의 협동 버프</p>
+            <div class="tags"><span class="pill">60분</span><span class="pill">팀</span></div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="quest-item" onclick="openQuestSheet('star')">
+          <div class="icon">⭐</div>
+          <div class="info">
+            <h4>별빛 퀘스트 <span class="pill gold" style="margin-left:6px">시즌 한정</span></h4>
+            <p>둔내 별빛길 · 21~04시 · 별찌 부화 가능</p>
+            <div class="tags"><span class="pill">40분</span><span class="pill rose">E</span><span class="pill gold">신규</span></div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="quest-item" onclick="openQuestSheet('forest')">
+          <div class="icon">🌲</div>
+          <div class="info">
+            <h4>숲의 산책</h4>
+            <p>자연휴양림 · 솔솔이의 솔향 ASMR 수집</p>
+            <div class="tags"><span class="pill">60분</span><span class="pill rose">E</span><span class="pill gold">신규</span></div>
+          </div>
+          <div class="chev">›</div>
+        </div>
+      </div>
+
+      <!-- 3. 정원 -->
+      <div class="page" id="page-garden">
+        <h2 class="page-title">정령들의 <em>고요한 하루</em></h2>
+
+        <div class="garden" id="gardenScene">
+          <div class="crystal">💎 결정 <span id="crystalCount">12</span></div>
+          <div class="moon"></div>
+          <div class="ground"></div>
+          <div class="obj float" style="left:14%;bottom:32%;font-size:34px">💧</div>
+          <div class="obj float" style="left:42%;bottom:30%;font-size:40px;animation-delay:.6s">🦦</div>
+          <div class="obj float" style="left:70%;bottom:34%;font-size:32px;animation-delay:1.2s">🥯</div>
+          <div class="obj" style="left:6%;bottom:8%;font-size:22px">🌿</div>
+          <div class="obj" style="right:8%;bottom:6%;font-size:22px">🪨</div>
+          <div class="obj" style="left:32%;bottom:4%;font-size:18px">🍄</div>
+          <div class="obj" style="right:32%;bottom:7%;font-size:18px">🌱</div>
+        </div>
+
+        <div class="row" style="gap:8px;margin-bottom:14px">
+          <button class="btn" style="flex:1" onclick="harvest()">🌾 결정 수확</button>
+          <button class="btn" style="flex:1" onclick="showToast('가구·구조물 상점 (시즌 1)')">🪑 가구</button>
+          <button class="btn primary" onclick="releaseSpirits()">방생</button>
+        </div>
+
+        <div class="card">
+          <h4>방생 진행률</h4>
+          <div class="progress"><div id="releaseBar" style="width:30%"></div></div>
+          <div class="meta" style="margin-top:6px"><b id="releaseText">3 / 10</b>마리 모으면 횡성 로컬 바우처 1매 발급</div>
+        </div>
+
+        <h4 style="font-size:13px;margin:14px 4px 10px;color:var(--mist);letter-spacing:.4px">정령 보관함 (<span id="spirit-count">3</span>/7)</h4>
+        <div class="spirit-row" id="spirit-grid">
+          <div class="spirit" data-id="dodo"><div class="emo">💧</div><div class="name">도도</div><div class="sub">이슬 정령</div><span class="badge">N</span></div>
+          <div class="spirit" data-id="dal"><div class="emo">🦦</div><div class="name">달달이</div><div class="sub">수달 정령</div><span class="badge">R</span></div>
+          <div class="spirit" data-id="jin"><div class="emo">🥯</div><div class="name">진</div><div class="sub">찐빵 정령</div><span class="badge">N</span></div>
+          <div class="spirit locked" data-id="bang"><div class="emo">🐂</div><div class="name">방구</div><div class="sub">한우 정령</div></div>
+          <div class="spirit locked" data-id="star"><div class="emo">⭐</div><div class="name">별찌</div><div class="sub">별빛 정령</div></div>
+          <div class="spirit locked" data-id="sol"><div class="emo">🌲</div><div class="name">솔솔이</div><div class="sub">솔향 정령</div></div>
+        </div>
+      </div>
+
+      <!-- 4. 기록 -->
+      <div class="page" id="page-diary">
+        <h2 class="page-title"><em>나의 고요한</em><br>기록</h2>
+
+        <div class="card" style="margin-bottom:14px">
+          <h4>이번 시즌 누적 디톡스</h4>
+          <div style="display:flex;align-items:baseline;gap:6px;margin-top:8px">
+            <span style="font-size:32px;font-weight:800;color:var(--gold)">4h 22m</span>
+            <span style="font-size:11px;color:var(--mist)">/ 목표 10h</span>
+          </div>
+          <div class="progress"><div style="width:42%"></div></div>
+        </div>
+
+        <div class="report-card">
+          <div class="when">2026.05.10 · 횡성호수길</div>
+          <h4>비로소 조용했던 오후</h4>
+          <div class="stat">
+            <div><b>1h 48m</b><small>화면 OFF</small></div>
+            <div><b>6,420</b><small>걸음</small></div>
+            <div><b>+1</b><small>달달이 부화</small></div>
+          </div>
+          <div class="quote">“수달이 도토리를 굴리는 소리를 들었다.”</div>
+        </div>
+
+        <h4 style="font-size:13px;margin:10px 4px 10px;color:var(--mist);letter-spacing:.4px">🔊 사운드 랜드마크</h4>
+
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>횡성호수길 · 호숫물</h4>
+              <div class="meta">화면 꺼짐 상태로만 수집 · 30초</div>
+            </div>
+            <span class="pill sage">수집</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>태기산 정상 · 바람</h4>
+              <div class="meta">화면 꺼짐 상태로만 수집 · 45초</div>
+            </div>
+            <span class="pill rose">미수집</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>둔내 별빛길 · 풀벌레</h4>
+              <div class="meta">21~04시 한정 · 별찌 동시 수집</div>
+            </div>
+            <span class="pill gold">한정</span>
+          </div>
+        </div>
+
+        <button class="btn primary" style="width:100%;margin-top:6px" onclick="shareReport()">📷 인스타그램으로 공유</button>
+        <div class="demo-note">‘나의 고요한 기록’이 9:16 비율 카드로 저장됩니다.</div>
+      </div>
+
+      <!-- 5. 보상 -->
+      <div class="page" id="page-reward">
+        <h2 class="page-title"><em>로컬 바우처</em>와<br>가맹점</h2>
+
+        <div class="voucher">
+          <div>
+            <div class="v-amt">10,000원</div>
+            <div class="v-meta">횡성 한우정 · 안흥찐빵마을 외 38곳</div>
+          </div>
+          <div style="text-align:right">
+            <div class="pill gold" id="voucher-state">발급 대기</div>
+            <div class="v-meta" style="margin-top:6px">보유: <b id="voucher-count-2">0</b>매</div>
+          </div>
+        </div>
+
+        <h4 style="font-size:13px;margin:6px 4px 10px;color:var(--mist);letter-spacing:.4px">사용 가능한 가맹점</h4>
+
+        <div class="card" onclick="showToast('🥩 횡성 한우정 · 노폰 라운지 운영')" style="cursor:pointer">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>🥩 횡성 한우정</h4>
+              <div class="meta">노폰 라운지 · 시각차단 미식 7,900원~</div>
+            </div>
+            <span class="pill gold">Star</span>
+          </div>
+        </div>
+        <div class="card" onclick="showToast('🥯 안흥찐빵마을 · 진 손글씨 엽서')" style="cursor:pointer">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>🥯 안흥찐빵마을</h4>
+              <div class="meta">‘진’의 손글씨 엽서 동봉</div>
+            </div>
+            <span class="pill sage">Grow</span>
+          </div>
+        </div>
+        <div class="card" onclick="showToast('☕ 호수길 카페 ‘고요’ · NFC 폰 탑 쌓기')" style="cursor:pointer">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>☕ 호수길 카페 ‘고요’</h4>
+              <div class="meta">NFC 폰 탑 쌓기 · 진의 협동 버프</div>
+            </div>
+            <span class="pill">Seed</span>
+          </div>
+        </div>
+        <div class="card" onclick="showToast('🌲 자연휴양림 · 솔솔이 동행 1+1')" style="cursor:pointer">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <h4>🌲 자연휴양림 산책 패스</h4>
+              <div class="meta">솔솔이 동행 시 1+1</div>
+            </div>
+            <span class="pill rose">시즌</span>
+          </div>
+        </div>
+
+        <div class="card glow" style="margin-top:12px">
+          <div class="row" style="gap:14px">
+            <div style="font-size:30px">✉️</div>
+            <div>
+              <h4>아날로그 회귀 키트</h4>
+              <div class="meta">현장에서 정령 손글씨 엽서 + 스티커 제공</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn primary" style="width:100%;margin-top:6px" onclick="useVoucher()">NFC 태그하여 사용하기</button>
+      </div>
+    </div>
+
+    <!-- 탭바 -->
+    <div class="tabbar" id="tabbar">
+      <button class="active" data-tab="home" onclick="switchTab('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1Z"/></svg>홈
+      </button>
+      <button data-tab="quest" onclick="switchTab('quest')">
+        <svg viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M2 12h4M18 12h4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/><circle cx="12" cy="12" r="3"/></svg>퀘스트
+      </button>
+      <button data-tab="garden" onclick="switchTab('garden')">
+        <svg viewBox="0 0 24 24"><path d="M12 21v-7M5 21h14M7 14c-2 0-3-1.5-3-3.5S6 7 12 4c6 3 8 4.5 8 6.5S19 14 17 14"/></svg>정원
+      </button>
+      <button data-tab="diary" onclick="switchTab('diary')">
+        <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>기록
+      </button>
+      <button data-tab="reward" onclick="switchTab('reward')">
+        <svg viewBox="0 0 24 24"><path d="M4 8h16v8H4z"/><path d="M4 12h16M9 8v8M15 8v8"/></svg>보상
+      </button>
+    </div>
+
+    <!-- 인큐베이션 오버레이 -->
+    <div class="overlay" id="incubation-overlay">
+      <div class="incu-inner">
+        <div class="tag">INCUBATION · 화면을 끄세요</div>
+        <div class="ring"></div>
+        <div class="timer" id="incu-timer">40:00</div>
+        <div class="hint">📵 화면이 잠긴 동안 정령이 자라요</div>
+        <div class="desc" id="incu-desc">
+          블랙아웃 트레킹 진행 중…<br>
+          화면을 켜거나 앱을 나가면 일시 중지됩니다.
+        </div>
+        <div class="incu-actions">
+          <button class="btn danger" onclick="endIncubation(false)">중단</button>
+          <button class="btn primary" onclick="endIncubation(true)">완료(데모)</button>
+        </div>
+        <div class="demo-note" style="margin-top:18px">데모: 1초 = 게임 내 1분으로 가속됩니다.</div>
+      </div>
+    </div>
+
+    <!-- 부화 모달 -->
+    <div class="modal-wrap" id="hatch-modal">
+      <div class="modal">
+        <div class="big-emo" id="hatch-emo">🦦</div>
+        <h4 id="hatch-name">달달이</h4>
+        <p id="hatch-desc">횡성호수길에서 도토리를 모으던<br>‘달달이(수달 정령)’가 부화했어요.</p>
+        <div class="actions">
+          <button class="btn" style="flex:1" onclick="closeHatch()">정원에 두기</button>
+          <button class="btn primary" style="flex:1" onclick="closeHatch();switchTab('diary')">기록 보기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 퀘스트 상세 시트 -->
+    <div class="sheet" id="quest-sheet">
+      <div class="grip"></div>
+      <h3 id="qs-title">블랙아웃 트레킹</h3>
+      <p id="qs-desc">횡성호수길 6.4km 구간을 화면을 끄고 걷는 메인 퀘스트입니다. 백그라운드 GPS·가속도 센서로 정합도를 측정해 정령을 부화시켜요.</p>
+      <div class="meta-row">
+        <div><b id="qs-time">40분</b>최소 디톡스</div>
+        <div><b id="qs-spirit">달달이</b>부화 정령</div>
+        <div><b id="qs-tier">R</b>등급</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="flex:1" onclick="closeQuestSheet()">닫기</button>
+        <button class="btn primary" style="flex:1.5" onclick="startQuestFromSheet()">인큐베이션 시작</button>
+      </div>
+    </div>
+
+    <!-- 토스트 -->
+    <div class="toast" id="toast"></div>
+
+    <!-- ===== 시작(스플래시) 화면 ===== -->
+    <div class="splash" id="splash">
+      <div class="splash-stars" id="splash-stars"></div>
+      <div class="moonbig"></div>
+      <div class="lakeline"></div>
+      <div class="mountainbg"></div>
+
+      <div class="splash-top">
+        <div class="gamename">고요로</div>
+        <div class="gamesub">G O Y O – R O</div>
+        <div class="tagline">화면이 꺼지면 비로소 열리는<br>횡성이라는 행성</div>
+      </div>
+
+      <div class="splash-mid">
+        <div class="planet-mark"></div>
+        <div class="planet-cap">방치형 로컬 트레킹 앱</div>
+      </div>
+
+      <div class="splash-bottom">
+        <button class="start-btn" onclick="startApp()">시작하기</button>
+        <div class="footer-mini">© 횡성군 × <b>GOYO–RO</b> · 디지털 디톡스 프로젝트</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ===== 배경 별 =====
+  const starsBox = document.getElementById('stars');
+  for(let i=0;i<70;i++){
+    const s = document.createElement('span');
+    s.style.left = (Math.random()*100)+'%';
+    s.style.top = (Math.random()*70)+'%';
+    s.style.animationDelay = (Math.random()*4)+'s';
+    s.style.opacity = (.3 + Math.random()*.5).toFixed(2);
+    starsBox.appendChild(s);
+  }
+
+  // 정원 별
+  const gardenBox = document.getElementById('gardenScene');
+  for(let i=0;i<24;i++){
+    const st = document.createElement('span');
+    st.className='gstar';
+    st.style.left = (Math.random()*100)+'%';
+    st.style.top = (Math.random()*55)+'%';
+    st.style.opacity = (.3 + Math.random()*.6).toFixed(2);
+    gardenBox.insertBefore(st, gardenBox.firstChild);
+  }
+
+  // ===== 상태 =====
+  let state = {
+    kept: 3,            // 보유 정령 수
+    released: 3,        // 총 부화 수(방생 카운터)
+    crystals: 12,       // 에너지 결정
+    vouchers: 0,        // 보유 바우처
+    unlocked: ['dodo','dal','jin'] // 해금된 정령 id
+  };
+
+  const SPIRIT_POOL = [
+    { id:'dodo', emo:'💧', name:'도도', desc:'새벽 이슬에서 태어난 작은 정령이에요.', tier:'N' },
+    { id:'dal',  emo:'🦦', name:'달달이', desc:'횡성호수길의 수달 정령이 도토리를 가져왔어요.', tier:'R' },
+    { id:'jin',  emo:'🥯', name:'진', desc:'안흥찐빵 정령 ‘진’이 김을 모락모락 피웠어요.', tier:'N' },
+    { id:'bang', emo:'🐂', name:'방구', desc:'한우 정령 ‘방구’가 풀밭에 누웠어요.', tier:'R' },
+    { id:'star', emo:'⭐', name:'별찌', desc:'둔내 밤하늘에서 떨어지다 만 별, ‘별찌’가 부화했어요.', tier:'E' },
+    { id:'sol',  emo:'🌲', name:'솔솔이', desc:'솔향이 솔솔 새어 나오는 ‘솔솔이’가 부화했어요.', tier:'E' }
+  ];
+
+  const QUESTS = {
+    night:  { title:'나이트 퀘스트',   desc:'23시~07시 숙면 모드를 활성화한 채 폰을 두면 도도(이슬 정령)가 부화해요.', time:'8시간',  spirit:'도도',   tier:'N', min:60 },
+    trek:   { title:'블랙아웃 트레킹', desc:'횡성호수길 6.4km를 화면을 끄고 걸으면 달달이가 도토리를 채집해 와요.', time:'40분~',  spirit:'달달이', tier:'R', min:40 },
+    raid:   { title:'스페셜 레이드',   desc:'한우 축제 ‘노폰 라운지’에서 시각차단 미식을 즐기면 방구가 부화해요.',   time:'90분',   spirit:'방구',   tier:'E', min:90 },
+    party:  { title:'파티 퀘스트',     desc:'식당/카페에서 NFC로 ‘폰 탑 쌓기’를 하면 진의 협동 버프가 발동돼요.',   time:'60분',   spirit:'진',     tier:'N', min:60 },
+    star:   { title:'별빛 퀘스트',     desc:'둔내 별빛길에서 21~04시 사이 화면을 끄고 별을 바라보면 별찌가 부화.',  time:'40분',   spirit:'별찌',   tier:'E', min:40 },
+    forest: { title:'숲의 산책',       desc:'자연휴양림에서 솔향 ASMR을 수집하면 솔솔이가 부화해요.',                 time:'60분',   spirit:'솔솔이', tier:'E', min:60 }
+  };
+
+  // ===== 탭 전환 =====
+  function switchTab(tab){
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tabbar button').forEach(b => b.classList.remove('active'));
+    const map = { home:'page-home', quest:'page-quest', garden:'page-garden', diary:'page-diary', reward:'page-reward' };
+    const pg = document.getElementById(map[tab]);
+    if(pg){ pg.classList.add('active'); pg.scrollTop = 0; }
+    const tabBtn = document.querySelector(`.tabbar button[data-tab="${tab}"]`);
+    if(tabBtn) tabBtn.classList.add('active');
+  }
+
+  // ===== 토스트 =====
+  let toastTimer = null;
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>{ t.classList.remove('show') }, 2400);
+  }
+
+  // ===== 퀘스트 시트 =====
+  let activeQuestKey = 'trek';
+  function openQuestSheet(key){
+    activeQuestKey = key;
+    const q = QUESTS[key];
+    document.getElementById('qs-title').textContent = q.title;
+    document.getElementById('qs-desc').textContent = q.desc;
+    document.getElementById('qs-time').textContent = q.time;
+    document.getElementById('qs-spirit').textContent = q.spirit;
+    document.getElementById('qs-tier').textContent = q.tier;
+    document.getElementById('quest-sheet').classList.add('show');
+  }
+  function closeQuestSheet(){
+    document.getElementById('quest-sheet').classList.remove('show');
+  }
+  function startQuestFromSheet(){
+    const q = QUESTS[activeQuestKey];
+    closeQuestSheet();
+    startIncubation(q.min, q.title, q.spirit);
+  }
+
+  // ===== 인큐베이션 =====
+  let incuTimer = null;
+  let incuSpirit = null;
+  function startIncubation(min, title, spiritName){
+    incuSpirit = spiritName || null;
+    document.getElementById('incu-desc').innerHTML = `${title || '인큐베이션'} 진행 중…<br>화면을 켜거나 앱을 나가면 일시 중지됩니다.`;
+    const overlay = document.getElementById('incubation-overlay');
+    overlay.classList.add('show');
+    let sec = min*60;
+    const t = document.getElementById('incu-timer');
+    const fmt = ()=>{
+      const m = String(Math.floor(sec/60)).padStart(2,'0');
+      const s = String(sec%60).padStart(2,'0');
+      t.textContent = `${m}:${s}`;
+    };
+    fmt();
+    clearInterval(incuTimer);
+    incuTimer = setInterval(()=>{
+      sec -= 60; // 데모 가속
+      if(sec<=0){ sec=0; fmt(); endIncubation(true); return; }
+      fmt();
+    }, 1000);
+  }
+  function endIncubation(success){
+    clearInterval(incuTimer);
+    document.getElementById('incubation-overlay').classList.remove('show');
+    if(success){ hatchSpirit(incuSpirit); }
+    incuSpirit = null;
+  }
+
+  function hatchSpirit(targetName){
+    const m = document.getElementById('hatch-modal');
+    let pick = null;
+    if(targetName){ pick = SPIRIT_POOL.find(s => s.name === targetName); }
+    if(!pick){ pick = SPIRIT_POOL[Math.floor(Math.random()*SPIRIT_POOL.length)]; }
+    document.getElementById('hatch-emo').textContent = pick.emo;
+    document.getElementById('hatch-name').textContent = pick.name;
+    document.getElementById('hatch-desc').innerHTML = pick.desc;
+    m.classList.add('show');
+
+    if(state.kept < 7){ state.kept++; }
+    state.released++;
+    if(!state.unlocked.includes(pick.id)){
+      state.unlocked.push(pick.id);
+      // 정원 잠금 해제
+      const cell = document.querySelector(`.spirit[data-id="${pick.id}"]`);
+      if(cell) cell.classList.remove('locked');
+    }
+    syncCounts();
+  }
+  function closeHatch(){
+    document.getElementById('hatch-modal').classList.remove('show');
+  }
+
+  function shareReport(){
+    showToast('📷 ‘나의 고요한 기록’ 카드가 저장되었어요');
+  }
+
+  function harvest(){
+    state.crystals += 3;
+    document.getElementById('crystalCount').textContent = state.crystals;
+    showToast('💎 에너지 결정 +3 수확');
+  }
+
+  function releaseSpirits(){
+    if(state.released < 10){
+      showToast(`방생까지 ${10-state.released}마리 더 필요해요 (${state.released}/10)`);
+      return;
+    }
+    state.released -= 10;
+    state.vouchers += 1;
+    state.kept = Math.max(0, state.kept - 3);
+    syncCounts();
+    showToast('🎫 횡성 로컬 바우처 1매 발급! 보상 탭에서 사용하세요');
+  }
+
+  function useVoucher(){
+    if(state.vouchers <= 0){ showToast('아직 발급된 바우처가 없어요'); return; }
+    state.vouchers -= 1;
+    syncCounts();
+    showToast('✉️ NFC 태그 인증 완료 · 손글씨 엽서가 발급됩니다');
+  }
+
+  function syncCounts(){
+    document.getElementById('kept-count').textContent = state.kept;
+    document.getElementById('release-need').textContent = Math.max(0, 10 - state.released);
+    document.getElementById('voucher-count').textContent = state.vouchers;
+    const vc2 = document.getElementById('voucher-count-2'); if(vc2) vc2.textContent = state.vouchers;
+    const vs = document.getElementById('voucher-state'); if(vs) vs.textContent = state.vouchers > 0 ? '사용 가능' : '발급 대기';
+    const bar = document.getElementById('releaseBar');
+    const txt = document.getElementById('releaseText');
+    if(bar && txt){
+      const pct = Math.min(100, (state.released/10)*100);
+      bar.style.width = pct+'%';
+      txt.textContent = `${state.released} / 10`;
+    }
+    const sc = document.getElementById('spirit-count'); if(sc) sc.textContent = state.unlocked.length;
+  }
+  syncCounts();
+
+  // 시트 바깥 탭하면 닫기
+  document.addEventListener('click', (e)=>{
+    const sheet = document.getElementById('quest-sheet');
+    if(sheet.classList.contains('show')){
+      if(!sheet.contains(e.target) && !e.target.closest('.quest-item')){
+        sheet.classList.remove('show');
+      }
+    }
+  });
+
+  // ===== 스플래시 화면 별 =====
+  const splashStarsBox = document.getElementById('splash-stars');
+  for(let i=0;i<55;i++){
+    const s = document.createElement('span');
+    s.style.left = (Math.random()*100)+'%';
+    s.style.top = (Math.random()*70)+'%';
+    const sz = (1 + Math.random()*2).toFixed(1);
+    s.style.width = sz+'px'; s.style.height = sz+'px';
+    s.style.animationDelay = (Math.random()*4)+'s';
+    s.style.opacity = (.3 + Math.random()*.6).toFixed(2);
+    splashStarsBox.appendChild(s);
+  }
+
+  // ===== 시작하기 =====
+  function startApp(){
+    const splash = document.getElementById('splash');
+    splash.classList.add('hide');
+    setTimeout(()=>{ splash.style.display='none'; }, 600);
+  }
+
+  // ===== 실시간 시계 + 날짜 =====
+  const DOW_EN = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+  const DOW_KO = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  const DOW_KO_SHORT = ['일','월','화','수','목','금','토'];
+
+  let lastDateKey = null;
+
+  function tickClock(){
+    const now = new Date();
+    const h = now.getHours();
+    const m = String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('clock').textContent = `${h}:${m}`;
+
+    // 날짜는 하루에 한 번 갱신 (변동 감지)
+    const y = now.getFullYear();
+    const mo = now.getMonth()+1;
+    const d = now.getDate();
+    const key = `${y}-${mo}-${d}`;
+    if(key !== lastDateKey){
+      lastDateKey = key;
+      tickDate(now);
+    }
+  }
+
+  function tickDate(now){
+    now = now || new Date();
+    const y = now.getFullYear();
+    const moNum = now.getMonth()+1;
+    const moStr = String(moNum).padStart(2,'0');
+    const d = now.getDate();
+    const dStr = String(d).padStart(2,'0');
+    const dow = now.getDay();
+
+    // 홈 화면 상단 인사말 날짜
+    const elHome = document.getElementById('today-date');
+    if(elHome) elHome.textContent = `${y}.${moStr}.${dStr} · ${DOW_EN[dow]}`;
+
+    // 상태바 옆 날짜 (짧게)
+    const elStatus = document.getElementById('clock-date');
+    if(elStatus) elStatus.textContent = `${moNum}월 ${d}일 (${DOW_KO_SHORT[dow]})`;
+  }
+
+  tickClock();
+  // 분 단위 정각 동기화 (자정 변경도 자연스럽게 잡힘)
+  setTimeout(()=>{
+    tickClock();
+    setInterval(tickClock, 60*1000);
+  }, (60 - new Date().getSeconds())*1000 + 50);
+  // 보조: 15초 주기 가벼운 갱신 (탭 백그라운드 복귀 대비)
+  setInterval(tickClock, 15*1000);
+
+  // ===== 실시간 배터리 =====
+  function renderBattery(level, charging){
+    const pct = Math.round(level * 100);
+    const txt = document.getElementById('battery-text');
+    const lv  = document.getElementById('battery-lv');
+    const wrap= document.getElementById('battery-wrap');
+    txt.textContent = pct + '%';
+    lv.style.width = pct + '%';
+    wrap.classList.toggle('low', pct <= 20 && !charging);
+    wrap.classList.toggle('charging', !!charging);
+    wrap.title = charging ? `충전 중 · ${pct}%` : `배터리 ${pct}%`;
+  }
+  function initBattery(){
+    if(navigator.getBattery){
+      navigator.getBattery().then(batt => {
+        renderBattery(batt.level, batt.charging);
+        batt.addEventListener('levelchange', ()=> renderBattery(batt.level, batt.charging));
+        batt.addEventListener('chargingchange', ()=> renderBattery(batt.level, batt.charging));
+      }).catch(()=>{
+        // 지원 안 되면 표시 숨김 (대신 ‘─’ 표시)
+        document.getElementById('battery-text').textContent = '—';
+        document.getElementById('battery-lv').style.width = '50%';
+      });
+    } else {
+      // iOS Safari 등 미지원 환경
+      document.getElementById('battery-text').textContent = '—';
+      document.getElementById('battery-lv').style.width = '50%';
+      document.getElementById('battery-wrap').title = '이 브라우저는 배터리 API를 제공하지 않습니다';
+    }
+  }
+  initBattery();
+</script>
+</body>
+</html>
